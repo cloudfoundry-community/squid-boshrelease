@@ -1,5 +1,0 @@
-check process proxy
-  with pidfile   /var/vcap/sys/run/squid/proxy.pid
-  start program "/var/vcap/jobs/proxy/bin/squid start"
-  stop program  "/var/vcap/jobs/proxy/bin/squid stop"
-  group vcap

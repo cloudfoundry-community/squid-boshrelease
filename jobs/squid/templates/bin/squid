@@ -3,8 +3,8 @@ set -eu
 
 RUN_DIR=/var/vcap/sys/run/squid
 LOG_DIR=/var/vcap/sys/log/squid
-JOB_DIR=/var/vcap/jobs/core
-PIDFILE=$RUN_DIR/proxy.pid
+JOB_DIR=/var/vcap/jobs/squid
+PIDFILE=$RUN_DIR/squid.pid
 mkdir -p $LOG_DIR $RUN_DIR
 exec >>$LOG_DIR/squid.log 2>&1
 
@@ -18,7 +18,7 @@ case $1 in
 
     echo "$(date) starting up squid (pid $$)"
     chown -Rv vcap:vcap $LOG_DIR $RUN_DIR
-    exec chpst -u vcap:vcap \
+    chpst -u vcap:vcap \
       /var/vcap/packages/squid/sbin/squid \
         -f $JOB_DIR/config/squid.conf
     ;;
@@ -27,7 +27,7 @@ case $1 in
     echo "$(date) shutting down squid"
     PID=$(head -1 $PIDFILE)
     if [[ -n "$PID" ]]; then
-      kill $PID || true
+      kill -TERM $PID || true
       while [ -e /proc/$PID ]; do sleep 0.1; done
     fi
     rm -f $PIDFILE

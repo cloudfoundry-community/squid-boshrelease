@@ -9,7 +9,7 @@ instance_groups:
   networks:
     - name: default
   jobs:
-    - name: proxy
+    - name: squid
       release: squid
 
 update:
