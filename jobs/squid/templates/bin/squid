@@ -28,6 +28,7 @@ case $1 in
     PID=$(head -1 $PIDFILE)
     if [[ -n "$PID" ]]; then
       kill -TERM $PID || true
+      (sleep 20; [ -e /proc/$PID ] && kill -KILL $PID)&
       while [ -e /proc/$PID ]; do sleep 0.1; done
     fi
     rm -f $PIDFILE
