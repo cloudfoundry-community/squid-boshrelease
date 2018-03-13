@@ -1,0 +1,19 @@
+name: squid
+version: 1.0.1
+commit_hash: 4098a86
+uncommitted_changes: false
+jobs:
+- name: squid
+  version: fda904a59e789acdfabce60cd0ce8a0391411233
+  fingerprint: fda904a59e789acdfabce60cd0ce8a0391411233
+  sha1: eb8023b215992f403592fe50d127a8c71946d26d
+packages:
+- name: squid
+  version: 0452088165daf5aa2f2acdfc48c98216b089892b
+  fingerprint: 0452088165daf5aa2f2acdfc48c98216b089892b
+  sha1: 18bebfc960b83bb37be561486d82e747f23fe7d1
+  dependencies: []
+license:
+  version: bc026dbd2e576cc5bf2acbd3bfe10f626c3abba8
+  fingerprint: bc026dbd2e576cc5bf2acbd3bfe10f626c3abba8
+  sha1: 9a25fd690c7d98491b9208cc2d1045fb2c44bb88
