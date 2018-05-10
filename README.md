@@ -8,7 +8,7 @@ To use this bosh release, first upload it to your bosh:
 bosh target BOSH_HOST
 git clone https://github.com/cloudfoundry-community/squid-boshrelease.git
 cd squid-boshrelease
-bosh upload release releases/squid/squid-1.yml
+bosh upload-release releases/squid/squid-1.0.1.yml
 ```
 
 For [bosh-lite](https://github.com/cloudfoundry/bosh-lite), you can quickly create a deployment manifest & deploy a cluster. Note that this requires that you have installed [spruce](https://github.com/geofffranks/spruce).
