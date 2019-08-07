@@ -14,7 +14,7 @@ meta:
 
 
   bosh-lite:
-    target: https://10.200.131.9:25555
+    target:   https://10.128.4.73:25555
     username: ((thunder-dome.username))
     password: ((thunder-dome.password))
     cacert:   ((thunder-dome.ca-certificate))
@@ -24,14 +24,13 @@ meta:
     secret_key: ((cfcommunity.secret))
 
   github:
-    owner:  cloudfoundry-community
-    repo:   squid-boshrelease
-    branch: master
-    private_key:  ((github.private-key))
-    access_token: ((github.access-token))
+    owner:        cloudfoundry-community
+    repo:         squid-boshrelease
+    branch:       master
+    private_key:  ((starkandwayne-bot-github.private-key))
+    access_token: ((starkandwayne-bot-github.access-token))
 
-  slack:
-    webhook: ((slack.webhook))
-    channel: '#botspam'
-    username:      starkandwayne-ci
-    icon:          https://www.starkandwayne.com/assets/images/shield-blue-50x50.png
+  shout:
+    url:      http://10.128.4.65:7109
+    username: ((shout.username))
+    password: ((shout.password))
