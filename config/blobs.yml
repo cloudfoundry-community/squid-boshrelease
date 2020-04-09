@@ -2,3 +2,7 @@ squid/squid-3.5.27.tar.bz2:
   size: 3210172
   object_id: 0d3f97cd-ebaa-433b-4513-c3c651023f02
   sha: bdbdd97d954d8a09d3aef3f91e4e7603b9a43e27
+squid/squid-4.10.tar.bz2:
+  size: 3413606
+  object_id: 0c5faa43-a2ea-4902-749c-6492a25ca50f
+  sha: sha256:b8fad3c5f017241431690732c218a74818f74e73fc94093b4ac9583b1e578c60
