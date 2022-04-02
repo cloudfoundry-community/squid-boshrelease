@@ -2,8 +2,8 @@
 meta:
   name:    squid
   release: Squid Proxy
-  target:  pipes
-  url:     https://pipes.starkandwayne.com
+  target:  cloudpipes@main
+  url:     https://cloudpipes.starkandwayne.com
 
   manifest:
     path: ci/manifest.yml
@@ -14,7 +14,7 @@ meta:
 
 
   bosh-lite:
-    target:   https://10.128.4.73:25555
+    target:   ((thunder-dome.url))
     username: ((thunder-dome.username))
     password: ((thunder-dome.password))
     cacert:   ((thunder-dome.ca-certificate))
@@ -31,6 +31,6 @@ meta:
     access_token: ((starkandwayne-bot-github.access-token))
 
   shout:
-    url:      http://10.128.4.65:7109
+    url:      ((shout.url))
     username: ((shout.username))
     password: ((shout.password))
