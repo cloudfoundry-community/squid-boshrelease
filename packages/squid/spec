@@ -1,5 +1,7 @@
 ---
 name: squid
+
 dependencies: []
+
 files:
-  - squid/squid-4.10.tar.bz2
+  - squid/squid.tar.xz

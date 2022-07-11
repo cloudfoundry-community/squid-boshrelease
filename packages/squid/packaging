@@ -1,11 +1,33 @@
-#!/bin/bash
-set -eu
+#!/bin/sh
 
-CPUS=$(grep -c ^processor /proc/cpuinfo)
-tar -xjvf squid/squid-4.10.tar.bz2
-cd squid-4.10
+set -e
+set -u
+set -x
 
-./configure --prefix ${BOSH_INSTALL_TARGET} \
-            --disable-arch-native
-make -j$CPUS
+
+find -ls
+
+tar xf squid/squid.tar.xz --transform 's/^squid-[0-9][0-9.]*/squid/'
+cd squid
+
+CFLAGS="-O2 -fPIC" \
+CXXFLAGS="$CFLAGS" \
+./configure \
+		--prefix "${BOSH_INSTALL_TARGET:?}" \
+		--disable-arch-native \
+		--disable-auto-locale \
+		--enable-async-io \
+		--enable-auth \
+		--enable-follow-x-forwarded-for \
+		--with-openssl \
+		--with-tls \
+		--enable-ssl-crtd \
+		--without-cppunit \
+		--without-libcap \
+		--without-netfilter-conntrack \
+		--without-systemd \
+		--without-tdb
+
+
+make -j"$(nproc)"
 make install
