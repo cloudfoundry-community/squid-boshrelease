@@ -1,6 +1,5 @@
----
-blobstore:
-  provider: s3
-  options:
-    bucket_name: squid-boshrelease
 final_name: squid
+blobstore:
+  provider: local
+  options:
+    blobstore_path: /tmp/squid-bosrelease-blobstore
