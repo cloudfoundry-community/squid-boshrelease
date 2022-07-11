@@ -6,8 +6,15 @@ packages:
 templates:
   bin/squid:         bin/squid
   config/squid.conf: config/squid.conf
+  config/auth.erb: config/auth.txt
 
 properties:
+  credentials:
+    description:
+      User file *content* for basic or digest authentication.
+      The authentication type is guessed from it's first line.
+    default: ''
+
   port:
     description: What port will clients need to connect to to access the proxy?
     default: 3128
