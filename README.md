@@ -4,23 +4,24 @@
 
 To use this bosh release, first upload it to your bosh:
 
-```
+```sh
 bosh target BOSH_HOST
 git clone https://github.com/cloudfoundry-community/squid-boshrelease.git
 cd squid-boshrelease
 bosh upload release releases/squid/squid-1.yml
 ```
 
-For [bosh-lite](https://github.com/cloudfoundry/bosh-lite), you can quickly create a deployment manifest & deploy a cluster. Note that this requires that you have installed [spruce](https://github.com/geofffranks/spruce).
+For [bosh-lite](https://github.com/cloudfoundry/bosh-lite), you can quickly create a deployment manifest & deploy a cluster.
+Note that this requires that you have installed [spruce](https://github.com/geofffranks/spruce).
 
-```
+```sh
 templates/make_manifest warden
 bosh -n deploy
 ```
 
 For AWS EC2, create a single VM:
 
-```
+```sh
 templates/make_manifest aws-ec2
 bosh -n deploy
 ```
@@ -31,7 +32,7 @@ For AWS & Openstack, the default deployment assumes there is a `default` securit
 
 Create a file `my-networking.yml`:
 
-``` yaml
+```yaml
 ---
 networks:
   - name: squid1
@@ -45,7 +46,7 @@ Where `- squid` means you wish to use an existing security group called `squid`.
 
 You now suffix this file path to the `make_manifest` command:
 
-```
+```sh
 templates/make_manifest openstack-nova my-networking.yml
 bosh -n deploy
 ```
@@ -54,7 +55,7 @@ bosh -n deploy
 
 As a developer of this release, create new releases and upload them:
 
-```
+```sh
 bosh create release --force && bosh -n upload release
 ```
 
@@ -62,15 +63,16 @@ bosh create release --force && bosh -n upload release
 
 To share final releases:
 
-```
+```sh
 bosh create release --final
 ```
 
-By default the version number will be bumped to the next major number. You can specify alternate versions:
+By default, the version number will be bumped to the next major number.
+You can specify alternate versions:
 
 
-```
+```sh
 bosh create release --final --version 2.1
 ```
 
-After the first release you need to contact [Dmitriy Kalinin](mailto://dkalinin@pivotal.io) to request your project is added to https://bosh.io/releases (as mentioned in README above).
+After the first release, you need to contact [Dmitriy Kalinin](mailto:dkalinin@pivotal.io) to request your project is added to https://bosh.io/releases (as mentioned in README above).
