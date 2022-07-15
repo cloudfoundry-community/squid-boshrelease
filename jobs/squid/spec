@@ -7,6 +7,7 @@ templates:
   bin/squid:         bin/squid
   config/squid.conf: config/squid.conf
   config/auth.erb: config/auth.txt
+  config/cert.erb: config/cert.pem
 
 properties:
   credentials:
@@ -18,6 +19,10 @@ properties:
   port:
     description: What port will clients need to connect to to access the proxy?
     default: 3128
+
+  tls-cert:
+    description: TLS certificate + private key; when set, swith http_port to https_port.
+    default: ''
 
   acl:
     description: A complete Squid ACL block, as a multi-line string
