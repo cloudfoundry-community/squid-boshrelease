@@ -48,6 +48,3 @@ properties:
       http_access deny !Safe_ports
       http_access deny CONNECT !SSL_ports
       http_access allow localnet
-
-  dnsIP:
-    description: IP address used for dns in place of /etc/resolv.conf
