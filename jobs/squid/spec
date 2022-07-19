@@ -14,6 +14,8 @@ properties:
     description: Username for user basic authentication
   credentials.password:
     description: Password for user basic authentication
+  credentials.salt:
+    description: Salt to compute APR1 password hash
 
   port:
     description: What port will clients need to connect to to access the proxy?
