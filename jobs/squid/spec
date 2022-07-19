@@ -12,8 +12,8 @@ templates:
 properties:
   credentials.username:
     description: Username for user basic authentication
-  credentials.digest:
-    description: Digest password for user basic authentication compatible with htpasswd
+  credentials.password:
+    description: Password for user basic authentication
 
   port:
     description: What port will clients need to connect to to access the proxy?
