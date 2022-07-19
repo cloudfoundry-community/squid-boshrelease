@@ -26,6 +26,7 @@ jobs:
         if: success() && startsWith(github.ref, 'refs/tags/')
         with:
           bundle: "1.17.1"
+          target_branch: dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_BOSH_ACCES_KEY_ID: ${{ secrets.AWS_BOSH_ACCES_KEY_ID }}

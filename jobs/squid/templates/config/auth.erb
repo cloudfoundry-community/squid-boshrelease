@@ -1,1 +1,8 @@
-<%= p('credentials') %>
+<% if_p('credentials.username') do |creds| %>
+<%
+password = p('credentials.password')
+salt = p('credentials.salt')
+digest = `openssl passwd -apr1 -salt #{salt} #{password}`
+%>
+<%= p('credentials.username') %>:<%= digest.strip %>
+<% end %>

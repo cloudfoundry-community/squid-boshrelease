@@ -10,11 +10,12 @@ templates:
   config/cert.erb: config/cert.pem
 
 properties:
-  credentials:
-    description:
-      User file *content* for basic or digest authentication.
-      The authentication type is guessed from it's first line.
-    default: ''
+  credentials.username:
+    description: Username for user basic authentication
+  credentials.password:
+    description: Password for user basic authentication
+  credentials.salt:
+    description: Salt to compute APR1 password hash
 
   port:
     description: What port will clients need to connect to to access the proxy?
@@ -57,6 +58,3 @@ properties:
       http_access deny !Safe_ports
       http_access deny CONNECT !SSL_ports
       http_access allow localnet
-
-  dnsIP:
-    description: IP address used for dns in place of /etc/resolv.conf
