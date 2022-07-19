@@ -2,4 +2,4 @@
 password = p('credentials.password')
 digest = `openssl passwd -apr1 #{password}`
 <%= p('credentials.username') %>:<%= digest.strip %>
-<% endif %>
+<% end %>
