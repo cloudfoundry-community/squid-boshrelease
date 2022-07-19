@@ -1,5 +1,5 @@
-final_name: squid
+name: squid
 blobstore:
-  provider: local
+  provider: s3
   options:
-    blobstore_path: /tmp/squid-bosrelease-blobstore
+    bucket_name: orange-dfy-bosh-dev-releases
