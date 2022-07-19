@@ -1,1 +1,3 @@
-<%= p('credentials') %>
+<% if_p('credentials.username') do |creds| %>
+<%= p('credentials.username') %>:<%= p('credentials.digest') %>
+<% endif %>
