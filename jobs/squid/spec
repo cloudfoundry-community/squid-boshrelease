@@ -23,7 +23,6 @@ properties:
 
   tls-cert:
     description: TLS certificate + private key; when set, swith http_port to https_port.
-    default: ''
 
   acl:
     description: A complete Squid ACL block, as a multi-line string
