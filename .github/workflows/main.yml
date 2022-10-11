@@ -26,7 +26,11 @@ jobs:
         if: success() && startsWith(github.ref, 'refs/tags/')
         with:
           bundle: "1.17.1"
+<<<<<<< HEAD
           target_branch: master
+=======
+          target_branch: dev
+>>>>>>> 6c3b0c5561e64664df9be8d5203ee938e600f4d4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_BOSH_ACCES_KEY_ID: ${{ secrets.AWS_BOSH_ACCES_KEY_ID }}
