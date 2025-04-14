@@ -1,11 +1,19 @@
 #!/bin/bash
-set -eu
+
+set -eux
+
+source meta-info/blobs-versions.env
+
+# Copy common utils
+mkdir -p "${BOSH_INSTALL_TARGET}/common"
+cp -a "${BOSH_COMPILE_TARGET}/common/"* "${BOSH_INSTALL_TARGET}/common"
 
 CPUS=$(grep -c ^processor /proc/cpuinfo)
-tar -xjvf squid/squid-4.10.tar.bz2
-cd squid-4.10
 
-./configure --prefix ${BOSH_INSTALL_TARGET} \
+tar -xjvf "squid/squid-${SQUID_VERSION}.tar.bz2"
+cd "squid-${SQUID_VERSION}"
+
+./configure --prefix "${BOSH_INSTALL_TARGET}" \
             --disable-arch-native
-make -j$CPUS
+make "-j$CPUS"
 make install

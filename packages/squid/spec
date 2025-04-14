@@ -2,4 +2,6 @@
 name: squid
 dependencies: []
 files:
-  - squid/squid-4.10.tar.bz2
+  - meta-info/blobs-versions.env
+  - common/utils.sh
+  - squid/*

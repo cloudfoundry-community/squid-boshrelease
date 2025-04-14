@@ -4,36 +4,69 @@ packages:
   - squid
 
 templates:
-  bin/squid:         bin/squid
+  bin/squid_ctl.sh: bin/squid_ctl.sh
   config/squid.conf: config/squid.conf
 
 properties:
-  port:
+  squid.port:
     description: What port will clients need to connect to to access the proxy?
     default: 3128
 
-  acl:
-    description: A complete Squid ACL block, as a multi-line string
-    default: |
-      acl localnet src 10.0.0.0/8     # RFC 1918 possible internal network
-      acl localnet src 172.16.0.0/12  # RFC 1918 possible internal network
-      acl localnet src 192.168.0.0/16 # RFC 1918 possible internal network
-      acl localnet src fc00::/7       # RFC 4193 local private network range
-      acl localnet src fe80::/10      # RFC 4291 link-local (directly plugged) machines
+  squid.config_base:
+    description: |
+      Base configuration for Squid, organized into modular sections (handy for BOSH Ops).
+      Use the 'order' attribute to sort sections - the lower the 'order', the earlier it appears in the output squid.conf.
+      The 'lines' can be provided either as multiline text blobs or as arrays of lines.
+    default:
+      refresh-patterns:
+        order: 10
+        lines: |
+          refresh_pattern ^ftp:              1440    20%    10080
+          refresh_pattern ^gopher:           1440    0%     1440
+          refresh_pattern -i (/cgi-bin/|\?)  0       0%     0
+          refresh_pattern .                  0       20%    4320
+      manager-and-localhost:
+        order: 20
+        lines: |
+          acl manager url_regex -i ^cache_object:// +i ^https?://[^/]+/squid-internal-mgr/
+          acl localhost src 127.0.0.1/32 ::1
+          http_access allow manager localhost
+          http_access deny manager
+          http_access allow localhost
+      standard-rules:
+        order: 50
+        lines:
+          - "# Standard ACL"
+          - "acl localnet src 10.0.0.0/8     # RFC 1918 possible internal network"
+          - "acl localnet src 172.16.0.0/12  # RFC 1918 possible internal network"
+          - "acl localnet src 192.168.0.0/16 # RFC 1918 possible internal network"
+          - "acl localnet src fc00::/7       # RFC 4193 local private network range"
+          - "acl localnet src fe80::/10      # RFC 4291 link-local (directly plugged) machines"
+          - "acl SSL_ports  port 443         # https"
+          - "acl Safe_ports port 80          # http"
+          - "acl Safe_ports port 21          # ftp"
+          - "acl Safe_ports port 443         # https"
+          - "acl Safe_ports port 70          # gopher"
+          - "acl Safe_ports port 210         # wais"
+          - "acl Safe_ports port 1025-65535  # unregistered ports"
+          - "acl Safe_ports port 280         # http-mgmt"
+          - "acl Safe_ports port 488         # gss-http"
+          - "acl Safe_ports port 591         # filemaker"
+          - "acl Safe_ports port 777         # multiling http"
+          - "acl Safe_ports port 2222        # CF SSH"
+          - "acl CONNECT method CONNECT"
+          - "# HTTP Access Rules"
+          - "http_access deny !Safe_ports"
+          - "http_access deny CONNECT !SSL_ports"
+          - "http_access allow localnet"
+      final-rules:
+        order: 90
+        lines:
+          - "# deny everything that hasn't been explicitly allowed"
+          - "http_access deny all"
+          - "# Disable caching settings"
+          - "cache deny all"
 
-      acl SSL_ports  port 443
-      acl Safe_ports port 80          # http
-      acl Safe_ports port 21          # ftp
-      acl Safe_ports port 443         # https
-      acl Safe_ports port 70          # gopher
-      acl Safe_ports port 210         # wais
-      acl Safe_ports port 1025-65535  # unregistered ports
-      acl Safe_ports port 280         # http-mgmt
-      acl Safe_ports port 488         # gss-http
-      acl Safe_ports port 591         # filemaker
-      acl Safe_ports port 777         # multiling http
-      acl CONNECT method CONNECT
-
-      http_access deny !Safe_ports
-      http_access deny CONNECT !SSL_ports
-      http_access allow localnet
+  squid.config_custom:
+    description: "Custom configuration sections designed to override or extend the base configuration, allowing you to customize Squid settings as needed (the custom section overrides the base section with the same key)."
+    default: {}

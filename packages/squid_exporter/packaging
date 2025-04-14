@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -eux
+
+source meta-info/blobs-versions.env
+
+# Copy common utils
+mkdir -p "${BOSH_INSTALL_TARGET}/common"
+cp -a "${BOSH_COMPILE_TARGET}/common/"* "${BOSH_INSTALL_TARGET}/common"
+
+mkdir -p "${BOSH_INSTALL_TARGET}/bin"
+cp -a "squid_exporter/squid_exporter_${SQUID_EXPORTER_VERSION}" "${BOSH_INSTALL_TARGET}/bin/squid_exporter"
+chmod a+x "${BOSH_INSTALL_TARGET}/bin/squid_exporter"

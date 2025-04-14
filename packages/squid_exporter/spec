@@ -1,0 +1,7 @@
+---
+name: squid_exporter
+
+files:
+  - meta-info/blobs-versions.env
+  - common/utils.sh
+  - squid_exporter/*

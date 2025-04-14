@@ -1,0 +1,5 @@
+check process squid_exporter
+  with pidfile "/var/vcap/sys/run/squid_exporter/squid_exporter.pid"
+  start program "/var/vcap/jobs/squid_exporter/bin/squid_exporter_ctl.sh start"
+  stop program "/var/vcap/jobs/squid_exporter/bin/squid_exporter_ctl.sh stop"
+  group vcap

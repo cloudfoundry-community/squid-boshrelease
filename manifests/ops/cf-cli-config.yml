@@ -1,0 +1,26 @@
+- type: replace
+  path: /instance_groups/name=squid/jobs/name=squid/properties?/squid?/config_custom?/cf-cli-https-rules?
+  value:
+    order: 40
+    lines: |
+      acl override_cf_https_domain dstdomain api.((cf_domain)) login.((cf_domain)) uaa.((cf_domain)) doppler.((cf_domain))
+      # Define the cache_peer – Squid will use it instead of establishing a direct connection
+      cache_peer ((cf_https_ip)) parent ((cf_https_port)) 0 no-query originserver name=override_cf_https
+      # Permit the use of this cache_peer for our domain
+      cache_peer_access override_cf_https allow override_cf_https_domain
+      # Enforce the use of the cache_peer for our requests instead of connecting directly
+      never_direct allow override_cf_https_domain
+
+- type: replace
+  path: /instance_groups/name=squid/jobs/name=squid/properties?/squid?/config_custom?/cf-cli-ssh-rules?
+  value:
+    order: 41
+    lines: |
+      acl override_cf_ssh_domain dstdomain ssh.((cf_domain))
+      # Define the cache_peer – Squid will use it instead of establishing a direct connection
+      cache_peer ((cf_ssh_ip)) parent ((cf_ssh_port)) 0 no-query originserver name=override_cf_ssh
+      # Permit the use of this cache_peer for our domain
+      cache_peer_access override_cf_ssh allow override_cf_ssh_domain
+      # Enforce the use of the cache_peer for our requests instead of connecting directly
+      never_direct allow override_cf_ssh_domain
+

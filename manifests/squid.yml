@@ -1,0 +1,42 @@
+---
+name: ((deployment_name))
+
+instance_groups:
+  - name: squid
+    instances: 1
+    vm_type: ((vm_type))
+    stemcell: default
+    azs: ((azs))
+    networks:
+      - name: default
+        static_ips: ((default_net_static_ips))
+    jobs:
+      - name: squid
+        release: squid
+        properties:
+          squid:
+            port: ((squid_port))
+      - name: squid_exporter
+        release: squid
+        tags:
+          prometheus_exporter_port: ((squid_exporter_port))
+        properties:
+          squid_exporter:
+            port: ((squid_exporter_port))
+            squid_port: ((squid_port))
+
+releases:
+  - name: squid
+    version: latest
+
+stemcells:
+  - alias: default
+    os: ubuntu-jammy
+    version: latest
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 5000-600000
+  update_watch_time: 5000-600000

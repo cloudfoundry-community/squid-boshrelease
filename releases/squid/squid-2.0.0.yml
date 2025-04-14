@@ -1,0 +1,32 @@
+name: squid
+version: 2.0.0
+commit_hash: c9c313a
+uncommitted_changes: false
+jobs:
+- name: squid
+  version: 0b6ccc1f4b2bc9cdc9e414d22ad85d3d4d77db4a3827faf18ca6047fd47151b8
+  fingerprint: 0b6ccc1f4b2bc9cdc9e414d22ad85d3d4d77db4a3827faf18ca6047fd47151b8
+  sha1: sha256:b8c4e901f3c6d18f5ecebe502aebfc4714b6e9fb769b77809b0e6f01709cd956
+  packages:
+  - squid
+- name: squid_exporter
+  version: 482f221fdbe81897b439c6d0ff548fbe5f88e6aff973031ac67816f99ea891f3
+  fingerprint: 482f221fdbe81897b439c6d0ff548fbe5f88e6aff973031ac67816f99ea891f3
+  sha1: sha256:9c58895f40637c66f038100711b3fd4112f9004f40f0e27f35e355cf2c429249
+  packages:
+  - squid_exporter
+packages:
+- name: squid
+  version: 68d235f14ce5794e23ea45b207c59d6d4e8859ba12eb6c73595bdaf4e36e07f2
+  fingerprint: 68d235f14ce5794e23ea45b207c59d6d4e8859ba12eb6c73595bdaf4e36e07f2
+  sha1: sha256:6bfeb93b42b8ace3952f3895cdb73185d85c64adfbb97a3a1f3380d09651622d
+  dependencies: []
+- name: squid_exporter
+  version: 273cb2561ece45ee86fd232fd34d6743bdeac00bbda26e867767c42b43928b7f
+  fingerprint: 273cb2561ece45ee86fd232fd34d6743bdeac00bbda26e867767c42b43928b7f
+  sha1: sha256:ff5046ae6c4c808b5038f1677d09b3ea46cc870a39441fb09a6a5dbf3affae77
+  dependencies: []
+license:
+  version: 2ddf44a51ba997973997ce5343ce1bdc8ee0d1bce5c91d6f0db4fb1386a58cb1
+  fingerprint: 2ddf44a51ba997973997ce5343ce1bdc8ee0d1bce5c91d6f0db4fb1386a58cb1
+  sha1: sha256:7905be4a468096b94e6f812b342f3c465a3f3f9b620602620d89fa2bd5879a33

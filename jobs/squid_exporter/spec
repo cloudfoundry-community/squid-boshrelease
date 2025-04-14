@@ -1,0 +1,35 @@
+---
+name: squid_exporter
+description: "Squid Prometheus exporter https://github.com/boynux/squid-exporter"
+packages:
+  - squid_exporter
+
+templates:
+  bin/squid_exporter_ctl.sh: bin/squid_exporter_ctl.sh
+
+properties:
+
+  squid_exporter.host:
+    description: "Host to bind exporter"
+    default: "0.0.0.0"
+  squid_exporter.port:
+    description: "Port to bind exporter"
+    default: "9301"
+  squid_exporter.metrics_path:
+    description: "Metrics path to expose prometheus metrics"
+    default: "/metrics"
+  squid_exporter.squid_hostname:
+    description: "Squid hostname"
+    default: "127.0.0.1"
+  squid_exporter.squid_port:
+    description: "Squid port to read metrics"
+    default: "3128"
+  squid_exporter.squid_login:
+    description: "Login to squid service"
+    default: ~
+  squid_exporter.squid_password:
+    description: "Password to squid service"
+    default: ~
+  squid_exporter.squid_pidfile:
+    description: "Optional path to the squid PID file for additional metrics"
+    default: "/var/vcap/sys/run/squid/squid.pid"
