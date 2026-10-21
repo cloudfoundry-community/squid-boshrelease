@@ -13,7 +13,10 @@ properties:
     default: 3128
 
   acl:
-    description: A complete Squid ACL block, as a multi-line string
+    description: |
+      A complete Squid ACL block, as a multi-line string.  The job adds
+      `http_access deny all` after it.  Squid already defines the manager,
+      localhost, and CONNECT ACLs, so the block does not need to.
     default: |
       acl localnet src 10.0.0.0/8     # RFC 1918 possible internal network
       acl localnet src 172.16.0.0/12  # RFC 1918 possible internal network

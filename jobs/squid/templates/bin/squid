@@ -18,7 +18,11 @@ case $1 in
 
     echo "$(date) starting up squid (pid $$)"
     chown -Rv vcap:vcap $LOG_DIR $RUN_DIR
-    chpst -u vcap:vcap \
+
+    # Squid runs as vcap from the start, as it always has.  setpriv comes
+    # with util-linux on every stemcell, while chpst came with runit, which
+    # the resolute stemcell no longer ships.
+    setpriv --reuid=vcap --regid=vcap --init-groups \
       /var/vcap/packages/squid/sbin/squid \
         -f $JOB_DIR/config/squid.conf
     ;;
@@ -28,8 +32,15 @@ case $1 in
     PID=$(head -1 $PIDFILE)
     if [[ -n "$PID" ]]; then
       kill -TERM $PID || true
-      (sleep 20; [ -e /proc/$PID ] && kill -KILL $PID)&
+      # squid.conf gives clients 10 seconds (shutdown_lifetime) to finish,
+      # so a squid still running after 20 seconds is stuck.  Kill its kid
+      # with it, or the kid outlives the master and keeps holding the port.
+      (sleep 20; [ -e /proc/$PID ] && { pkill -KILL -P $PID; kill -KILL $PID; })&
+      WATCHDOG=$!
       while [ -e /proc/$PID ]; do sleep 0.1; done
+      # Squid exited on its own, so cancel the watchdog before the pid can
+      # be reused by some other process.
+      kill $WATCHDOG 2>/dev/null || true
     fi
     rm -f $PIDFILE
     ;;

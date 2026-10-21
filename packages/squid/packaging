@@ -1,11 +1,41 @@
 #!/bin/bash
 set -eu
 
+VERSION=7.7
 CPUS=$(grep -c ^processor /proc/cpuinfo)
-tar -xjvf squid/squid-4.10.tar.bz2
-cd squid-4.10
 
-./configure --prefix ${BOSH_INSTALL_TARGET} \
-            --disable-arch-native
-make -j$CPUS
+tar -xzf squid/squid-${VERSION}.tar.gz
+cd squid-${VERSION}
+
+# Squid 7 needs a C++17 compiler (GCC 8 or newer), so this package builds on
+# the jammy, noble, and resolute stemcells, and not on xenial or bionic.
+#
+# The optional libraries are turned off by name, so the build does not change
+# with whatever development headers a stemcell happens to carry.  The proxy
+# needs none of them, because a CONNECT tunnel carries HTTPS without any TLS
+# support in Squid itself.  libcap stays auto-detected, since every stemcell
+# ships its headers.
+#
+# Strict error checking turns compiler warnings into errors, so it is off,
+# because a newer GCC on a future stemcell should not fail the build over a
+# new warning.
+./configure \
+  --prefix=${BOSH_INSTALL_TARGET} \
+  --disable-dependency-tracking \
+  --disable-arch-native \
+  --disable-strict-error-checking \
+  --without-openssl \
+  --without-gnutls \
+  --without-nettle \
+  --without-mit-krb5 \
+  --without-heimdal-krb5 \
+  --without-gss \
+  --without-ldap \
+  --without-sasl \
+  --without-systemd \
+  --without-netfilter-conntrack \
+  --without-cppunit \
+  --without-tdb
+
+make -j${CPUS}
 make install
