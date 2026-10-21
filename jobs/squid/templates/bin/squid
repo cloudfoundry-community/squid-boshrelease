@@ -5,7 +5,32 @@ RUN_DIR=/var/vcap/sys/run/squid
 LOG_DIR=/var/vcap/sys/log/squid
 JOB_DIR=/var/vcap/jobs/squid
 PIDFILE=$RUN_DIR/squid.pid
+
+# This script runs as root, and Squid runs as vcap.  The log directory stays
+# root's, so vcap can write to its own log files but cannot swap one for a
+# symlink or a hard link that would send root's writes somewhere else.
+# Nothing but root can add a name to the directory once it is root's, so the
+# checks below cannot race with vcap.
 mkdir -p $LOG_DIR $RUN_DIR
+chown root:root $LOG_DIR
+chmod 0755 $LOG_DIR
+
+# log_file NAME OWNER - make NAME a plain file in the log directory with a
+# single link, owned by OWNER, replacing anything else that has that name.
+log_file() {
+  local file=$LOG_DIR/$1
+  if [[ -L $file || ( -e $file && ! -f $file ) ]]; then
+    rm -rf -- "$file"
+  elif [[ -f $file && $(stat -c %h "$file") -ne 1 ]]; then
+    rm -f -- "$file"
+  fi
+  touch -- "$file"
+  chown -h "$2:$2" "$file"
+  chmod 0640 "$file"
+}
+
+log_file squid.log root
+chmod 0644 $LOG_DIR/squid.log
 exec >>$LOG_DIR/squid.log 2>&1
 
 case $1 in
@@ -17,7 +42,9 @@ case $1 in
     fi
 
     echo "$(date) starting up squid (pid $$)"
-    chown -Rv vcap:vcap $LOG_DIR $RUN_DIR
+    chown vcap:vcap $RUN_DIR
+    log_file access.log vcap
+    log_file cache.log vcap
 
     # Squid runs as vcap with only the vcap group, as it did under
     # `chpst -u vcap:vcap`.  --clear-groups drops root's supplementary groups
