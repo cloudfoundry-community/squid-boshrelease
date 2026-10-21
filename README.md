@@ -28,7 +28,7 @@ The job's template changed in a few ways for Squid 7:
 
 - The scripts no longer trust the pidfile on its own. They check that its process runs the squid binary before they signal it, so a process that reused the PID of a dead Squid is never touched. A stop with no pidfile now exits 0, and every stop logs when it finishes and how long it took.
 
-- The template now denies requests to loopback and link-local destinations, using Squid's built-in `to_localhost` and `to_linklocal` ACLs, before any rule that allows clients. A client that the `acl` property allows can no longer reach services on the proxy's own loopback interface or the cloud metadata service at 169.254.169.254 through the proxy.
+- The template now denies requests to loopback and link-local destinations, using Squid's built-in `to_localhost` and `to_linklocal` ACLs, and to the VM's own address through a `to_self` ACL, before any rule that allows clients. A client that the `acl` property allows can no longer reach services on the proxy's own interfaces or the cloud metadata service at 169.254.169.254 through the proxy.
 
 - Squid's cache log now goes to `/var/vcap/sys/log/squid/cache.log` instead of `/dev/null`, so startup failures, such as a port that won't bind, are visible. The BOSH agent rotates it with the other job logs, and `logfile_rotate 0` keeps Squid from renaming its own logs.
 

@@ -16,7 +16,7 @@
 
 - The scripts check that the pidfile's process runs the squid binary before they trust it, so a reused PID is never signalled. A stop with no pidfile exits 0, and each stop logs when it finishes.
 
-- The template denies requests to loopback and link-local destinations, through Squid's built-in `to_localhost` and `to_linklocal` ACLs, before any rule that allows clients. Clients can no longer reach the proxy's own loopback services or the cloud metadata service at 169.254.169.254 through it.
+- The template denies requests to loopback and link-local destinations, through Squid's built-in `to_localhost` and `to_linklocal` ACLs, and to the VM's own address through a `to_self` ACL, before any rule that allows clients. Clients can no longer reach the proxy's own services or the cloud metadata service at 169.254.169.254 through it.
 
 - Squid's cache log goes to `/var/vcap/sys/log/squid/cache.log` instead of `/dev/null`, and the BOSH agent rotates it with the other job logs.
 
