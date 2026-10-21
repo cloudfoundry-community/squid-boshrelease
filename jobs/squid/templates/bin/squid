@@ -4,7 +4,16 @@ set -eu
 RUN_DIR=/var/vcap/sys/run/squid
 LOG_DIR=/var/vcap/sys/log/squid
 JOB_DIR=/var/vcap/jobs/squid
+SQUID=/var/vcap/packages/squid/sbin/squid
 PIDFILE=$RUN_DIR/squid.pid
+
+# A process belongs to this job when it runs a binary from the squid package.
+# The kernel reports the resolved path, which sits under a fingerprinted
+# directory in /var/vcap/data/packages, and gains " (deleted)" once a newer
+# package replaces it, so the pattern accepts every version of the package.
+PACKAGE_EXE='^/var/vcap/(data/)?packages/squid/([^/]+/)?(sbin|libexec)/[^/]+( \(deleted\))?$'
+SQUID_EXE='^/var/vcap/(data/)?packages/squid/([^/]+/)?sbin/squid( \(deleted\))?$'
+SQUID_REAL=$(readlink -f $SQUID || true)
 
 # This script runs as root, and Squid runs as vcap.  The log directory stays
 # root's, so vcap can write to its own log files but cannot swap one for a
@@ -33,13 +42,78 @@ log_file squid.log root
 chmod 0644 $LOG_DIR/squid.log
 exec >>$LOG_DIR/squid.log 2>&1
 
-case $1 in
-  start)
-    if [[ -f $PIDFILE ]]; then
-      PID=$(head -1 $PIDFILE)
-      test -n "$PID" && test -e /proc/$PID && exit 1
-      rm -f $PIDFILE
+# is_squid PID - true when PID is a live process running this job's squid
+# binary.  A pidfile can outlive Squid after a SIGKILL, and its PID can then
+# be reused by an unrelated process, so the pidfile alone is never trusted.
+# A zombie has no exe link, so it does not count as live.
+is_squid() {
+  [[ $1 =~ ^[0-9]+$ ]] || return 1
+  local exe
+  exe=$(readlink /proc/$1/exe 2>/dev/null) || return 1
+  [[ $exe == "$SQUID_REAL" || $exe =~ $SQUID_EXE ]]
+}
+
+# leftovers - the PIDs of every process that runs a binary from this job's
+# package.  When the master dies by SIGKILL, its kid keeps running as an
+# orphan and keeps holding the port, and nothing else would ever stop it.
+leftovers() {
+  local proc exe
+  for proc in /proc/[0-9]*; do
+    exe=$(readlink $proc/exe 2>/dev/null) || continue
+    if [[ $exe == "$SQUID_REAL" || $exe =~ $PACKAGE_EXE ]]; then
+      echo ${proc#/proc/}
     fi
+  done
+}
+
+# sweep - SIGKILL every leftover process and wait for it to go.
+sweep() {
+  local pids tries=0
+  pids=$(leftovers)
+  [[ -n $pids ]] || return 0
+  echo "$(date) killing leftover squid processes:" $pids
+  kill -KILL $pids 2>/dev/null || true
+  while [[ -n $(leftovers) ]]; do
+    if (( tries++ >= 50 )); then
+      echo "$(date) squid processes are still running after SIGKILL:" $(leftovers)
+      return 1
+    fi
+    sleep 0.1
+  done
+}
+
+# pidfile_pid - the PID in the pidfile when it is this job's squid, or nothing.
+# vcap owns the run directory, so the pidfile is read with care: a symlink is
+# never followed, the read is short and cannot block for long, and only a
+# number is ever written to the log.
+pidfile_pid() {
+  local pid
+  [[ -e $PIDFILE || -L $PIDFILE ]] || return 0
+  if [[ -L $PIDFILE || ! -f $PIDFILE ]]; then
+    echo "$(date) ignoring the pidfile, because it is not a plain file" >&2
+    return 0
+  fi
+  pid=$(timeout 5 head -c 32 -- $PIDFILE 2>/dev/null | head -1 || true)
+  if is_squid "$pid"; then
+    echo $pid
+  elif [[ $pid =~ ^[0-9]+$ && -e /proc/$pid ]] && ! readlink /proc/$pid/exe >/dev/null 2>&1; then
+    echo "$(date) ignoring the pidfile, because root cannot read /proc/$pid/exe to check that pid $pid is squid" >&2
+  elif [[ $pid =~ ^[0-9]+$ ]]; then
+    echo "$(date) ignoring the stale pidfile, because pid $pid is not squid" >&2
+  else
+    echo "$(date) ignoring the pidfile, because it holds no pid" >&2
+  fi
+}
+
+case ${1:-} in
+  start)
+    PID=$(pidfile_pid)
+    if [[ -n $PID ]]; then
+      echo "$(date) squid is already running (pid $PID)"
+      exit 1
+    fi
+    rm -f $PIDFILE
+    sweep
 
     echo "$(date) starting up squid (pid $$)"
     chown vcap:vcap $RUN_DIR
@@ -54,26 +128,36 @@ case $1 in
     # stemcell, while chpst came with runit, which the resolute stemcell no
     # longer ships.
     setpriv --reuid=vcap --regid=vcap --clear-groups --no-new-privs \
-      /var/vcap/packages/squid/sbin/squid \
-        -f $JOB_DIR/config/squid.conf
+      $SQUID -f $JOB_DIR/config/squid.conf
     ;;
 
   stop)
+    STARTED=$SECONDS
     echo "$(date) shutting down squid"
-    PID=$(head -1 $PIDFILE)
-    if [[ -n "$PID" ]]; then
+    PID=$(pidfile_pid)
+    if [[ -n $PID ]]; then
       kill -TERM $PID || true
       # squid.conf gives clients 10 seconds (shutdown_lifetime) to finish,
       # so a squid still running after 20 seconds is stuck.  Kill its kid
       # with it, or the kid outlives the master and keeps holding the port.
-      (sleep 20; [ -e /proc/$PID ] && { pkill -KILL -P $PID; kill -KILL $PID; })&
-      WATCHDOG=$!
-      while [ -e /proc/$PID ]; do sleep 0.1; done
-      # Squid exited on its own, so cancel the watchdog before the pid can
-      # be reused by some other process.
-      kill $WATCHDOG 2>/dev/null || true
+      # The loop checks the binary each time, so a PID that is reused after
+      # Squid exits is never signalled.
+      DEADLINE=$((SECONDS + 20))
+      while is_squid $PID; do
+        if (( SECONDS >= DEADLINE )); then
+          echo "$(date) squid (pid $PID) is still running after 20 seconds, so killing it and its kid"
+          pkill -KILL -P $PID || true
+          is_squid $PID && kill -KILL $PID 2>/dev/null || true
+          break
+        fi
+        sleep 0.1
+      done
+    elif [[ ! -f $PIDFILE ]]; then
+      echo "$(date) squid has no pidfile, so it is not running"
     fi
+    sweep || true
     rm -f $PIDFILE
+    echo "$(date) squid stopped after $((SECONDS - STARTED)) seconds"
     ;;
 
   *)
