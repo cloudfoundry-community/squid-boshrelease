@@ -9,7 +9,10 @@ templates:
 
 properties:
   port:
-    description: What port will clients need to connect to to access the proxy?
+    description: |
+      The port that clients connect to, from 1024 to 65535.  Squid runs as
+      vcap without any capabilities, so it cannot bind a lower port, and the
+      template refuses one.
     default: 3128
 
   acl:
