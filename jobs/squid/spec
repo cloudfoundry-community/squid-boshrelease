@@ -14,9 +14,11 @@ properties:
 
   acl:
     description: |
-      A complete Squid ACL block, as a multi-line string.  The job adds
+      A complete Squid ACL block, as a multi-line string.  The job denies
+      requests to loopback and link-local destinations before it, and it adds
       `http_access deny all` after it.  Squid already defines the manager,
-      localhost, and CONNECT ACLs, so the block does not need to.
+      localhost, to_localhost, to_linklocal, and CONNECT ACLs, so the block
+      does not need to.
     default: |
       acl localnet src 10.0.0.0/8     # RFC 1918 possible internal network
       acl localnet src 172.16.0.0/12  # RFC 1918 possible internal network
