@@ -4,9 +4,11 @@ This release deploys the [Squid](https://www.squid-cache.org/) caching web proxy
 
 ## Versions and stemcells
 
-Release 2.0.0 builds Squid 7.7, which needs a C++17 compiler. We built and tested it on the resolute userland with GCC 15 and OpenSSL 3.5. The jammy and noble stemcells ship compilers new enough for C++17, so it should build there too, but we haven't tried. It doesn't compile on trusty, xenial, or bionic. If you deploy on one of those older stemcells, stay on release 1.1.0, which builds Squid 4.10.
+Release 2.0.0 builds Squid 7.7, which needs a C++17 compiler. We built and tested it on the resolute userland with GCC 15. The jammy and noble stemcells ship compilers new enough for C++17, so it should build there too, but we haven't tried. It doesn't compile on trusty, xenial, or bionic. If you deploy on one of those older stemcells, stay on release 1.1.0, which builds Squid 4.10.
 
-Release 1.1.0 starts Squid with `chpst`, which comes with runit. The resolute stemcell no longer ships runit, so release 1.1.0 can't start there. Release 2.0.0 starts Squid with `setpriv` from util-linux instead, which every stemcell has, and Squid still runs as `vcap` from the start.
+Release 1.1.0 starts Squid with `chpst`, which comes with runit. The resolute stemcell no longer ships runit, so release 1.1.0 can't start there. Release 2.0.0 starts Squid with `setpriv` from util-linux instead, which every stemcell has. Squid runs as `vcap` from the start, with the `vcap` group and no supplementary groups, so it doesn't pick up the other groups that `vcap` belongs to on a stemcell, such as `adm`, `cdrom`, and `sudo`. `setpriv` also sets the no-new-privileges flag, so Squid and its helpers can't gain privileges through a setuid program.
+
+Squid runs without any capabilities, so it can't bind a port below 1024. The template refuses such a port when BOSH renders it, so the deploy fails with a clear message instead of a proxy that never listens.
 
 ## Upgrading from 1.1.0
 
@@ -22,9 +24,21 @@ The job's template changed in a few ways for Squid 7:
 
 - When Squid is still running 20 seconds after the stop script asks it to exit, the script now kills Squid's worker process along with the master. Before, it killed only the master, so the worker could keep holding the port.
 
-An `acl` property written for 1.1.0 still works. If it defines `acl CONNECT method CONNECT`, Squid 7 accepts the line as a harmless repeat of its built-in ACL.
+- The start and stop scripts now look for leftover processes from the squid package and kill them. When something kills the master with SIGKILL, its worker keeps running on its own and keeps the port, and before this change nothing ever stopped it. The scripts find these processes by the path of the binary they run, not by name.
 
-The build leaves OpenSSL, GnuTLS, Kerberos, LDAP, and SASL out, as release 1.1.0 did. A forward proxy tunnels HTTPS with CONNECT, and that needs no TLS library in Squid.
+- The scripts no longer trust the pidfile on its own. They check that its process runs the squid binary before they signal it, so a process that reused the PID of a dead Squid is never touched. A stop with no pidfile now exits 0, and every stop logs when it finishes and how long it took.
+
+- The template now denies requests to loopback and link-local destinations, using Squid's built-in `to_localhost` and `to_linklocal` ACLs, before any rule that allows clients. A client that the `acl` property allows can no longer reach services on the proxy's own loopback interface or the cloud metadata service at 169.254.169.254 through the proxy.
+
+- Squid's cache log now goes to `/var/vcap/sys/log/squid/cache.log` instead of `/dev/null`, so startup failures, such as a port that won't bind, are visible. The BOSH agent rotates it with the other job logs, and `logfile_rotate 0` keeps Squid from renaming its own logs.
+
+- The log directory is now owned by root. Squid's own logs, `access.log` and `cache.log`, still belong to `vcap`, while `squid.log`, which holds the start and stop scripts' output, belongs to root. Before, `vcap` owned the directory, so a compromised Squid could have replaced `squid.log` with a symlink and made the scripts append to any file on the VM.
+
+The default `acl` property from 1.1.0 works unchanged. If it defines `acl CONNECT method CONNECT`, Squid 7 accepts the line as a harmless repeat of its built-in ACL. An `acl` that uses an authentication helper for LDAP, Kerberos, or SASL, or any TLS option, won't work, because this build leaves those libraries out, and an `acl` that uses a directive Squid has since removed won't parse.
+
+The build turns off OpenSSL, GnuTLS, Kerberos, LDAP, and SASL by name. A forward proxy tunnels HTTPS with CONNECT, and that needs no TLS library in Squid. Release 1.1.0 ran `configure` without those flags, so its build used whichever of those libraries the compiling stemcell happened to have.
+
+Moving a deployment from xenial to resolute changes the stemcell, so BOSH recreates the VM, and nothing from release 1.1.0 is left running on it. On jammy or noble, the upgrade stops 1.1.0 in place, and the new start script kills any 1.1.0 process that is still running before it starts Squid 7.
 
 ## Usage
 
