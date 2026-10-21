@@ -26,4 +26,4 @@
 
 - The default `acl` property from 1.1.0 works on this release. An `acl` that uses an LDAP, Kerberos, or SASL authentication helper or a TLS option won't, because this build leaves those libraries out.
 
-- Moving from xenial to resolute recreates the VM. On jammy or noble, the upgrade stops 1.1.0 in place, and the new start script kills any 1.1.0 process still running.
+- Moving a deployment from xenial to resolute recreates the VM. On jammy or noble, the upgrade stops 1.1.0 in place, and the new start script kills any 1.1.0 process still running.
