@@ -19,10 +19,14 @@ case $1 in
     echo "$(date) starting up squid (pid $$)"
     chown -Rv vcap:vcap $LOG_DIR $RUN_DIR
 
-    # Squid runs as vcap from the start, as it always has.  setpriv comes
-    # with util-linux on every stemcell, while chpst came with runit, which
-    # the resolute stemcell no longer ships.
-    setpriv --reuid=vcap --regid=vcap --init-groups \
+    # Squid runs as vcap with only the vcap group, as it did under
+    # `chpst -u vcap:vcap`.  --clear-groups drops root's supplementary groups
+    # and adds none of vcap's, which on a stemcell include adm, cdrom, and
+    # sudo.  --no-new-privs keeps a compromised Squid from gaining privileges
+    # through a setuid binary.  setpriv comes with util-linux on every
+    # stemcell, while chpst came with runit, which the resolute stemcell no
+    # longer ships.
+    setpriv --reuid=vcap --regid=vcap --clear-groups --no-new-privs \
       /var/vcap/packages/squid/sbin/squid \
         -f $JOB_DIR/config/squid.conf
     ;;
