@@ -4,7 +4,7 @@ This release deploys the [Squid](https://www.squid-cache.org/) caching web proxy
 
 ## Versions and stemcells
 
-Release 2.0.0 builds Squid 7.7, which needs a C++17 compiler. We built and tested it on the resolute userland with GCC 15. The jammy and noble stemcells ship compilers new enough for C++17, so it should build there too, but we haven't tried. It doesn't compile on trusty, xenial, or bionic. If you deploy on one of those older stemcells, stay on release 1.1.0, which builds Squid 4.10.
+Release 2.0.0 builds Squid 7.7, which needs a C++17 compiler, and we support it on ubuntu-noble and later stemcells. We built and tested it on the ubuntu-noble 1.562 stemcell, where it compiled and served traffic, and on the resolute userland with GCC 15. It doesn't compile on trusty, xenial, or bionic, and we don't support it on jammy. Release 1.1.0, which builds Squid 4.10, is the last release for those older stemcells.
 
 Release 1.1.0 starts Squid with `chpst`, which comes with runit. The resolute stemcell no longer ships runit, so release 1.1.0 can't start there. Release 2.0.0 starts Squid with `setpriv` from util-linux instead, which every stemcell has. Squid runs as `vcap` from the start, with the `vcap` group and no supplementary groups, so it doesn't pick up the other groups that `vcap` belongs to on a stemcell, such as `adm`, `cdrom`, and `sudo`. `setpriv` also sets the no-new-privileges flag, so Squid and its helpers can't gain privileges through a setuid program.
 
