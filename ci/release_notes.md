@@ -1,6 +1,6 @@
 # Squid 7.7, and support for the resolute stemcell
 
-- The release now builds Squid 7.7 instead of Squid 4.10. Squid 7 needs a C++17 compiler, so this release doesn't compile on trusty, xenial, or bionic, and deployments on those stemcells should stay on release 1.1.0. We built and tested it on resolute, and jammy and noble ship compilers new enough for it.
+- The release now builds Squid 7.7 instead of Squid 4.10. Squid 7 needs a C++17 compiler, so this release doesn't compile on trusty, xenial, or bionic, and deployments on those stemcells should stay on release 1.1.0. We built and tested it on resolute and noble, and we support it on ubuntu-noble and later stemcells. Jammy's compiler can build it, but we don't support jammy, so deployments there should stay on release 1.1.0 as well.
 
 - The job now starts Squid with `setpriv` from util-linux instead of `chpst` from runit, because the resolute stemcell no longer ships runit. Squid runs as `vcap` from the start, with the `vcap` group and no supplementary groups, and with the no-new-privileges flag set.
 
@@ -26,4 +26,4 @@
 
 - The default `acl` property from 1.1.0 works on this release. An `acl` that uses an LDAP, Kerberos, or SASL authentication helper or a TLS option won't, because this build leaves those libraries out.
 
-- Moving a deployment from xenial to resolute recreates the VM. On jammy or noble, the upgrade stops 1.1.0 in place, and the new start script kills any 1.1.0 process still running.
+- Moving a deployment from xenial to resolute recreates the VM. On noble, the upgrade stops 1.1.0 in place, and the new start script kills any 1.1.0 process still running.
